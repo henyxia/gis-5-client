@@ -4,7 +4,7 @@ from flask import request
 import hashlib
 import hmac
 
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -12,13 +12,12 @@ from sklearn.svm import LinearSVC
 from sklearn.neural_network import MLPClassifier
 
 app = Flask(__name__)
-version_name = "0.0.15"
+version_name = "0.0.20"
 
 # generics
-def algo_class_generic_score(classifier_name):
+def algo_class_generic_score(classifier):
     req = request.get_json()
 
-    classifier = classifier_name(random_state=1)
     classifier.fit(
         req["X"],
         req["Y"],
@@ -45,6 +44,21 @@ def algo_class_generic_precision(classifier_name):
     return jsonify(
         predicted_class=int(correct_class[0]),
         precision=float(precisions[0][correct_class[0]]),
+    )
+
+def algo_reg_generic_score(classifier):
+    req = request.get_json()
+
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    predicted_value = classifier.predict(req["test_value"])
+    score = classifier.score(req["X"], req["Y"])
+
+    return jsonify(
+        predicted_value=float(predicted_value[0][0]),
+        score=float(score),
     )
 
 # routes
@@ -141,8 +155,12 @@ def algo_random_forest_class():
 
 @app.post('/algo/svm/class')
 def algo_linear_svc():
-    return algo_class_generic_score(LinearSVC)
+    return algo_class_generic_score(LinearSVC())
 
 @app.post('/algo/mlp/class')
 def algo_mlp_class():
     return algo_class_generic_precision(MLPClassifier)
+
+@app.post('/algo/knn/reg')
+def algo_knn_reg():
+    return algo_reg_generic_score(KNeighborsRegressor())
