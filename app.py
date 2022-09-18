@@ -7,12 +7,13 @@ import hmac
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
 
 @app.route("/version")
 def version():
-    return jsonify(version="0.0.12")
+    return jsonify(version="0.0.13")
 
 @app.post('/identify')
 def identidy_post():
@@ -72,6 +73,23 @@ def algo_decision_tree_class():
     req = request.get_json()
 
     classifier = DecisionTreeClassifier()
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    correct_class = classifier.predict(req["test_value"])
+    precisions = classifier.predict_proba(req["test_value"])
+
+    return jsonify(
+        predicted_class=int(correct_class[0]),
+        precision=float(precisions[0][correct_class[0]]),
+    )
+
+@app.post('/algo/random-forest/class')
+def algo_random_forest_class():
+    req = request.get_json()
+
+    classifier = RandomForestClassifier(random_state=1)
     classifier.fit(
         req["X"],
         req["Y"],
