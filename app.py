@@ -8,12 +8,48 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
 
 app = Flask(__name__)
+version_name = "0.0.14"
 
+# generics
+def algo_class_generic_score(classifier_name):
+    req = request.get_json()
+
+    classifier = classifier_name(random_state=1)
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    correct_class = classifier.predict(req["test_value"])
+    score = classifier.score(req["X"], req["Y"])
+
+    return jsonify(
+        predicted_class=int(correct_class[0]),
+        score=float(score),
+    )
+
+def algo_class_generic_precision(classifier_name):
+    req = request.get_json()
+
+    classifier = classifier_name(random_state=1)
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    correct_class = classifier.predict(req["test_value"])
+    precisions = classifier.predict_proba(req["test_value"])
+
+    return jsonify(
+        predicted_class=int(correct_class[0]),
+        precision=float(precisions[0][correct_class[0]]),
+    )
+
+# routes
 @app.route("/version")
 def version():
-    return jsonify(version="0.0.13")
+    return jsonify(version=version_name)
 
 @app.post('/identify')
 def identidy_post():
@@ -101,3 +137,7 @@ def algo_random_forest_class():
         predicted_class=int(correct_class[0]),
         precision=float(precisions[0][correct_class[0]]),
     )
+
+@app.post('/algo/svm/class')
+def algo_linear_svc():
+    return algo_class_generic_score(LinearSVC)
