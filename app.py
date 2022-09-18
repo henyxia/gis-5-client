@@ -5,12 +5,13 @@ import hashlib
 import hmac
 
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import RidgeClassifier
 
 app = Flask(__name__)
 
 @app.route("/version")
 def version():
-    return jsonify(version="0.0.10")
+    return jsonify(version="0.0.11")
 
 @app.post('/identify')
 def identidy_post():
@@ -36,7 +37,6 @@ def algo_knn_class():
     req = request.get_json()
 
     neigh = KNeighborsClassifier(n_neighbors=5)
-    #pprint.pprint(X)
     neigh.fit(
         req["X"],
         req["Y"],
@@ -47,4 +47,21 @@ def algo_knn_class():
     return jsonify(
         predicted_class=int(correct_class[0]),
         precision=float(precisions[0][correct_class[0]]),
+    )
+
+@app.post('/algo/linear/class')
+def algo_linear_class():
+    req = request.get_json()
+
+    classifier = RidgeClassifier()
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    correct_class = classifier.predict(req["test_value"])
+    precision = classifier.score(req["X"], req["Y"])
+
+    return jsonify(
+        predicted_class=int(correct_class[0]),
+        precision=float(precision),
     )
