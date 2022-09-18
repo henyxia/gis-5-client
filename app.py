@@ -6,12 +6,13 @@ import hmac
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import RidgeClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 app = Flask(__name__)
 
 @app.route("/version")
 def version():
-    return jsonify(version="0.0.11")
+    return jsonify(version="0.0.12")
 
 @app.post('/identify')
 def identidy_post():
@@ -64,4 +65,21 @@ def algo_linear_class():
     return jsonify(
         predicted_class=int(correct_class[0]),
         precision=float(precision),
+    )
+
+@app.post('/algo/decision-tree/class')
+def algo_decision_tree_class():
+    req = request.get_json()
+
+    classifier = DecisionTreeClassifier()
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    correct_class = classifier.predict(req["test_value"])
+    precisions = classifier.predict_proba(req["test_value"])
+
+    return jsonify(
+        predicted_class=int(correct_class[0]),
+        precision=float(precisions[0][correct_class[0]]),
     )
