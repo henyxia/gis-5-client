@@ -9,9 +9,10 @@ from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
+from sklearn.neural_network import MLPClassifier
 
 app = Flask(__name__)
-version_name = "0.0.14"
+version_name = "0.0.15"
 
 # generics
 def algo_class_generic_score(classifier_name):
@@ -141,3 +142,7 @@ def algo_random_forest_class():
 @app.post('/algo/svm/class')
 def algo_linear_svc():
     return algo_class_generic_score(LinearSVC)
+
+@app.post('/algo/mlp/class')
+def algo_mlp_class():
+    return algo_class_generic_precision(MLPClassifier)
