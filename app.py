@@ -5,14 +5,14 @@ import hashlib
 import hmac
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.linear_model import RidgeClassifier
+from sklearn.linear_model import RidgeClassifier, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.neural_network import MLPClassifier
 
 app = Flask(__name__)
-version_name = "0.0.20"
+version_name = "0.0.21"
 
 # generics
 def algo_class_generic_score(classifier):
@@ -59,6 +59,21 @@ def algo_reg_generic_score(classifier):
     return jsonify(
         predicted_value=float(predicted_value[0][0]),
         score=float(score),
+    )
+
+def algo_reg_generic_precision(classifier):
+    req = request.get_json()
+
+    classifier.fit(
+        req["X"],
+        req["Y"],
+    )
+    predicted_value = classifier.predict(req["test_value"])
+    precisions = classifier.predict_proba(req["test_value"])
+
+    return jsonify(
+        predicted_value=float(predicted_value[0]),
+        precision=float(precisions[0][0]),
     )
 
 # routes
@@ -164,3 +179,7 @@ def algo_mlp_class():
 @app.post('/algo/knn/reg')
 def algo_knn_reg():
     return algo_reg_generic_score(KNeighborsRegressor())
+
+@app.post('/algo/linear/reg')
+def algo_linear_reg():
+    return algo_reg_generic_precision(LogisticRegression())
