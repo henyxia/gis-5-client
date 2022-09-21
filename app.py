@@ -6,13 +6,13 @@ import hmac
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import RidgeClassifier, LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.neural_network import MLPClassifier
 
 app = Flask(__name__)
-version_name = "0.0.21"
+version_name = "0.0.22"
 
 # generics
 def algo_class_generic_score(classifier):
@@ -57,7 +57,7 @@ def algo_reg_generic_score(classifier):
     score = classifier.score(req["X"], req["Y"])
 
     return jsonify(
-        predicted_value=float(predicted_value[0][0]),
+        predicted_value=float(predicted_value[0]),
         score=float(score),
     )
 
@@ -183,3 +183,7 @@ def algo_knn_reg():
 @app.post('/algo/linear/reg')
 def algo_linear_reg():
     return algo_reg_generic_precision(LogisticRegression())
+
+@app.post('/algo/decision-tree/reg')
+def algo_decision_tree_reg():
+    return algo_reg_generic_score(DecisionTreeRegressor(random_state=1))
