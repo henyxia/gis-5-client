@@ -9,10 +9,11 @@ from sklearn.linear_model import RidgeClassifier, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.preprocessing import OneHotEncoder
 
 app = Flask(__name__)
-version_name = "0.0.22"
+version_name = "0.0.30"
 
 # generics
 def algo_class_generic_score(classifier):
@@ -187,3 +188,20 @@ def algo_linear_reg():
 @app.post('/algo/decision-tree/reg')
 def algo_decision_tree_reg():
     return algo_reg_generic_score(DecisionTreeRegressor(random_state=1))
+
+@app.post('/algo/mlp/reg')
+def algo_mlp_reg():
+    return algo_reg_generic_score(MLPRegressor(random_state=1))
+
+@app.post('/preprocessing/encoder/one-hot')
+def preprocessing_encoder_one_hot():
+    req = request.get_json()
+
+    enc = OneHotEncoder(drop='if_binary').fit(req["X"])
+    result = enc.transform(req['Y']).toarray()
+    keys = enc.get_feature_names_out(['package_color', 'package_label'])
+    response = dict()
+    for i in range(len(keys)):
+        response[keys[i]] = result[0][i]
+
+    return jsonify(response)
